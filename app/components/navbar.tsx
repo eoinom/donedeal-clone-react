@@ -5,12 +5,14 @@ export default function Navbar() {
   return (
     <nav className='w-full bg-white shadow flex items-center justify-between px-6 py-3 sticky top-0 z-20'>
       <div className='flex items-center gap-2'>
-        <Image
-          src='/logos/donedeal-logo-cars.svg'
-          alt='DoneDeal Logo'
-          width={120}
-          height={32}
-        />
+        <Link href='/'>
+          <Image
+            src='/logos/donedeal-logo-cars.svg'
+            alt='DoneDeal Logo'
+            width={120}
+            height={32}
+          />
+        </Link>
       </div>
       <ul className='flex gap-6 text-base font-medium text-gray-700'>
         <li>
