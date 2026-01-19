@@ -92,3 +92,12 @@ export const mockCars: Car[] = [
     postedAt: '2026-01-03',
   },
 ];
+
+export function fetchMockCars(): Promise<Car[]> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(mockCars);
+      // reject(new Error('Failed to fetch car adverts'));
+    }, 800); // Simulate network delay
+  });
+}
