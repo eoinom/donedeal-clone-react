@@ -1,6 +1,13 @@
 'use client';
 
-import { Suspense, use, useDeferredValue, useState } from 'react';
+import {
+  Suspense,
+  use,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useState,
+} from 'react';
 import CarAdvert from './CarAdvert';
 import { fetchMockCars } from '../data/mockCars';
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -12,11 +19,17 @@ type CarListProps = {
   searchTerm?: string;
   maxPrice?: number;
   fuelType?: string;
+  onCarResultsChange?: (count: number) => void;
 };
 
 const FUEL_TYPES = Object.freeze(['Petrol', 'Diesel', 'Hybrid', 'Electric']);
 
-function CarList({ searchTerm, maxPrice, fuelType }: CarListProps) {
+function CarList({
+  searchTerm,
+  maxPrice,
+  fuelType,
+  onCarResultsChange,
+}: CarListProps) {
   // The use hook suspends the component until the promise resolves
   const cars = use(carsPromise);
 
@@ -31,6 +44,11 @@ function CarList({ searchTerm, maxPrice, fuelType }: CarListProps) {
       fuelType && fuelType !== 'All' ? car.fuelType === fuelType : true,
     );
 
+  useEffect(() => {
+    if (onCarResultsChange) {
+      onCarResultsChange(filteredCars.length);
+    }
+  }, [filteredCars, onCarResultsChange]);
 
   return (
     <>
@@ -56,6 +74,7 @@ export default function Buy() {
   const deferredSearchInput = useDeferredValue(searchTerm);
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
   const [fuelType, setFuelType] = useState<string | undefined>(undefined);
+  const [carResultsNumber, setCarResultsNumber] = useState(0);
 
   const onMaxPriceChange = (price: number | undefined) => {
     if (price === undefined || isNaN(price)) {
@@ -65,13 +84,17 @@ export default function Buy() {
     setMaxPrice(price);
   };
 
+  const onCarResultsChange = useCallback((count: number) => {
+    setCarResultsNumber(count);
+  }, []);
+
   return (
     <div className='min-h-screen bg-zinc-50 font-sans'>
       <section className='max-w-5xl mx-auto py-8'>
-        <h2 className='text-2xl font-semibold mb-4'>Cars to buy</h2>
+        <h2 className='text-4xl font-semibold mb-8'>Cars to buy</h2>
         <div className='flex flex-col lg:flex-row gap-6'>
           <div className='w-full lg:w-64'>
-            <h2>Filters</h2>
+            <h2 className='text-2xl font-semibold'>Filters</h2>
             <div className='flex flex-col gap-y-4 bg-white rounded shadow mt-4 p-4'>
               {/* Search car titles by text input */}
               <div>
@@ -140,7 +163,7 @@ export default function Buy() {
               </div>
             </div>
           </div>
-          <div className='flex flex-col w-full justify-center gap-6'>
+          <div className='flex flex-col w-full gap-6'>
             <Suspense
               fallback={
                 <div className='text-2xl text-center font-semibold mt-12'>
@@ -155,10 +178,19 @@ export default function Buy() {
                   </div>
                 }
               >
+                  <div className='text-lg font-medium text-gray-700'>
+                    Showing {carResultsNumber} ad
+                    {carResultsNumber !== 1 ? 's' : ''} for{' '}
+                    {deferredSearchInput
+                      ? `"${deferredSearchInput}"`
+                      : 'All Cars'}{' '}
+                    in Ireland
+                  </div>
                 <CarList
                   searchTerm={deferredSearchInput}
                   maxPrice={maxPrice}
                   fuelType={fuelType}
+                  onCarResultsChange={onCarResultsChange}
                 />
               </ErrorBoundary>
             </Suspense>
