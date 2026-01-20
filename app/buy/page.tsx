@@ -15,25 +15,37 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 // Create the promise outside the component so it's stable across renders
 const carsPromise = fetchMockCars();
 
+const FUEL_TYPES = Object.freeze(['Petrol', 'Diesel', 'Hybrid', 'Electric']);
+
+type SortOption = {
+  text: string;
+  value: 'price-asc' | 'price-desc';
+};
+
+const SORT_OPTIONS: SortOption[] = [
+  { text: 'Price: Low to High', value: 'price-asc' },
+  { text: 'Price: High to Low', value: 'price-desc' },
+];
+
 type CarListProps = {
   searchTerm?: string;
   maxPrice?: number;
   fuelType?: string;
+  sortOption?: SortOption;
   onCarResultsChange?: (count: number) => void;
 };
-
-const FUEL_TYPES = Object.freeze(['Petrol', 'Diesel', 'Hybrid', 'Electric']);
 
 function CarList({
   searchTerm,
   maxPrice,
   fuelType,
+  sortOption,
   onCarResultsChange,
 }: CarListProps) {
   // The use hook suspends the component until the promise resolves
   const cars = use(carsPromise);
 
-  const filteredCars = cars
+  const filteredAndSortedCars = cars
     .filter((car) =>
       searchTerm
         ? car.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -42,18 +54,26 @@ function CarList({
     .filter((car) => (maxPrice ? car.price <= maxPrice : true))
     .filter((car) =>
       fuelType && fuelType !== 'All' ? car.fuelType === fuelType : true,
-    );
+    )
+    .sort((a, b) => {
+      if (sortOption?.value === 'price-asc') {
+        return a.price - b.price;
+      } else if (sortOption?.value === 'price-desc') {
+        return b.price - a.price;
+      }
+      return 0;
+    });
 
   useEffect(() => {
     if (onCarResultsChange) {
-      onCarResultsChange(filteredCars.length);
+      onCarResultsChange(filteredAndSortedCars.length);
     }
-  }, [filteredCars, onCarResultsChange]);
+  }, [filteredAndSortedCars, onCarResultsChange]);
 
   return (
     <>
-      {filteredCars.length > 0 ? (
-        filteredCars.map((car) => (
+      {filteredAndSortedCars.length > 0 ? (
+        filteredAndSortedCars.map((car) => (
           <CarAdvert
             key={car.id}
             car={car}
@@ -74,6 +94,7 @@ export default function Buy() {
   const deferredSearchInput = useDeferredValue(searchTerm);
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
   const [fuelType, setFuelType] = useState<string | undefined>(undefined);
+  const [sortOption, setSortOption] = useState<SortOption>(SORT_OPTIONS[0]);
   const [carResultsNumber, setCarResultsNumber] = useState(0);
 
   const onMaxPriceChange = (price: number | undefined) => {
@@ -153,6 +174,7 @@ export default function Buy() {
                   id='fuelType'
                   name='fuelType'
                   className='w-full p-2 border border-gray-300 rounded bg-white'
+                  value={fuelType}
                   onChange={(e) => setFuelType(e.target.value)}
                 >
                   <option key={'All'}>{'All'}</option>
@@ -178,6 +200,7 @@ export default function Buy() {
                   </div>
                 }
               >
+                <div className='flex justify-between items-center'>
                   <div className='text-lg font-medium text-gray-700'>
                     Showing {carResultsNumber} ad
                     {carResultsNumber !== 1 ? 's' : ''} for{' '}
@@ -186,10 +209,36 @@ export default function Buy() {
                       : 'All Cars'}{' '}
                     in Ireland
                   </div>
+                  <div className='flex items-center text-sm text-gray-500'>
+                    <label htmlFor='select-sort'>Sort by: </label>
+                    <select
+                      id='select-sort'
+                      className='ml-2 p-1 border border-gray-300 rounded bg-white'
+                      value={sortOption.value}
+                      onChange={(e) =>
+                        setSortOption(
+                          SORT_OPTIONS.find(
+                            (option) => option.value === e.target.value,
+                          )!,
+                        )
+                      }
+                    >
+                      {SORT_OPTIONS.map((option) => (
+                        <option
+                          key={option.value}
+                          value={option.value}
+                        >
+                          {option.text}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
                 <CarList
                   searchTerm={deferredSearchInput}
                   maxPrice={maxPrice}
                   fuelType={fuelType}
+                  sortOption={sortOption}
                   onCarResultsChange={onCarResultsChange}
                 />
               </ErrorBoundary>
