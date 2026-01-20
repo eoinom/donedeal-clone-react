@@ -37,12 +37,19 @@ function CarList({ searchTerm, maxPrice, fuelType }: CarListProps) {
       : filteredByPriceCars;
   return (
     <>
-      {filteredByFuelTypeCars.map((car) => (
-        <CarAdvert
-          key={car.id}
-          car={car}
-        />
-      ))}
+      {filteredByFuelTypeCars.length > 0 ? (
+        filteredByFuelTypeCars.map((car) => (
+          <CarAdvert
+            key={car.id}
+            car={car}
+          />
+        ))
+      ) : (
+        <div className='text-center text-gray-600 mt-12'>
+          <p>No cars found!</p>
+          <p>Please adjust your filters.</p>
+        </div>
+      )}
     </>
   );
 }
