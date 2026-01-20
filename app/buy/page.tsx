@@ -20,25 +20,22 @@ function CarList({ searchTerm, maxPrice, fuelType }: CarListProps) {
   // The use hook suspends the component until the promise resolves
   const cars = use(carsPromise);
 
-  const filteredCars = searchTerm
-    ? cars.filter((car) =>
-        car.title.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-    : cars;
+  const filteredCars = cars
+    .filter((car) =>
+      searchTerm
+        ? car.title.toLowerCase().includes(searchTerm.toLowerCase())
+        : true,
+    )
+    .filter((car) => (maxPrice ? car.price <= maxPrice : true))
+    .filter((car) =>
+      fuelType && fuelType !== 'All' ? car.fuelType === fuelType : true,
+    );
 
-  const filteredByPriceCars =
-    maxPrice !== undefined
-      ? filteredCars.filter((car) => car.price <= maxPrice)
-      : filteredCars;
 
-  const filteredByFuelTypeCars =
-    fuelType && fuelType !== 'All'
-      ? filteredByPriceCars.filter((car) => car.fuelType === fuelType)
-      : filteredByPriceCars;
   return (
     <>
-      {filteredByFuelTypeCars.length > 0 ? (
-        filteredByFuelTypeCars.map((car) => (
+      {filteredCars.length > 0 ? (
+        filteredCars.map((car) => (
           <CarAdvert
             key={car.id}
             car={car}
