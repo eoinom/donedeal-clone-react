@@ -114,7 +114,7 @@ export default function Buy() {
       <section className='max-w-5xl mx-auto py-8'>
         <h2 className='text-4xl font-semibold mb-8'>Cars to buy</h2>
         <div className='flex flex-col lg:flex-row gap-6'>
-          <div className='w-full lg:w-64'>
+          <aside className='w-full lg:w-64'>
             <h2 className='text-2xl font-semibold'>Filters</h2>
             <div className='flex flex-col gap-y-4 bg-white rounded shadow mt-4 p-4'>
               {/* Search car titles by text input */}
@@ -184,8 +184,8 @@ export default function Buy() {
                 </select>
               </div>
             </div>
-          </div>
-          <div className='flex flex-col w-full gap-6'>
+          </aside>
+          <main className='flex flex-col w-full gap-6'>
             <Suspense
               fallback={
                 <div className='text-2xl text-center font-semibold mt-12'>
@@ -243,7 +243,7 @@ export default function Buy() {
                 />
               </ErrorBoundary>
             </Suspense>
-          </div>
+          </main>
         </div>
       </section>
     </div>
